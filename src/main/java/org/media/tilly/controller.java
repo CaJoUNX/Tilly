@@ -1,16 +1,14 @@
 package org.media.tilly;
 
+import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
+import javafx.util.Duration;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +29,10 @@ public class controller {
         productOverview.setLayoutX(0);
         productOverview.setLayoutY(0);
         productOverview.setStyle("-fx-background-color: gray; -fx-border-radius: 2");
+
+
+
+
 
         for (int i = 0; i < products.size(); i++) {
             Pane productPreview = new Pane();
@@ -130,8 +132,8 @@ public class controller {
         buttonCheckout.setLayoutY(env.WINDOW_HEIGHT * 0.9 + 20);
 
         buttonCheckout.setOnMouseClicked(event -> {
-             employeeLogin();
-                });
+            employeeLogin();
+        });
         basket.getChildren().add(buttonCheckout);
 
 
@@ -189,7 +191,7 @@ public class controller {
 
         }});
         /*
-        **/
+         **/
 
 
 
@@ -320,9 +322,9 @@ public class controller {
         Pane[] basketItems = new Pane[basket.getProducts().size()];
         for (int i = 0; i < basket.getProducts().size(); i++) {
             basketItems[i] = new Pane();
-             basketItems[i].setPrefSize(basketContent.getPrefWidth(), basketContent.getPrefHeight() * 0.2);
-             basketItems[i].setLayoutX(basketContent.getPrefWidth() / 2);
-             basketItems[i].setLayoutY(0);
+            basketItems[i].setPrefSize(basketContent.getPrefWidth(), basketContent.getPrefHeight() * 0.2);
+            basketItems[i].setLayoutX(basketContent.getPrefWidth() / 2);
+            basketItems[i].setLayoutY(0);
             basketItems[i] = new Pane();
             Label itemName = new Label( basket.getProducts().get(i).getAmount() +""+ basket.getProducts().get(i).getProduct().getName());
             Label itemPrice = new Label(basket.getProducts().get(i).getProduct().getPrice() + " DKK");
@@ -366,12 +368,12 @@ public class controller {
             basket.removeAllProducts();
             root.getChildren().remove(blackoutOverlay);
             root.getChildren().remove(employeeCheckoutOverlay);});
-            updateBasket();
+        updateBasket();
         employeeCheckoutOverlay.getChildren().add(backButton);
 
 
 
-        Label funds = new Label("Balance: " + creditInformation.getCredit() + "DKK");
+        Label funds = new Label("Balance: " + creditInformation.getFunds() + "DKK");
         funds.setPrefSize(200, 120);
         funds.setLayoutX(employeeCheckoutOverlay.getPrefWidth() - funds.getPrefWidth());
         funds.setLayoutY(employeeCheckoutOverlay.getPrefHeight() *0.001);
@@ -416,9 +418,9 @@ public class controller {
         }
         double total = 0.0;
         for (int i = 0; i < products.size(); i++) {
-            //total += products.get(i).getProduct().getPrice();
+            total += products.get(i).getAmount() * products.get(i).getProduct().getPrice();
         }
-        Label totalLabel = new Label(total + "");
+        Label totalLabel = new Label(total + "DKK");
         totalLabel.setFont(new Font("Arial", 14));
         totalLabel.setPrefSize(320, 20);
         totalLabel.setLayoutX(summary.getPrefWidth() - totalLabel.getPrefWidth());
@@ -448,6 +450,7 @@ public class controller {
 
     }
     public void employeePay() throws InterruptedException {
+
         Pane blackoutOverlay = new Pane();
         blackoutOverlay.setStyle("-fx-background-color: black");
         blackoutOverlay.setOpacity(0.8);
@@ -456,13 +459,26 @@ public class controller {
         blackoutOverlay.setPrefHeight(env.WINDOW_HEIGHT);
         blackoutOverlay.setPrefWidth(env.WINDOW_WIDTH);
         root.getChildren().add(blackoutOverlay);
-        Label paymentstatus = new Label();
-        paymentstatus.setPrefSize(300, 150);
-        paymentstatus.setTextAlignment(TextAlignment.CENTER);
-        paymentstatus.setLayoutY(employeeCheckoutOverlay.getPrefHeight() * 0.1);
-        paymentstatus.setFont(new Font("Arial", 18));
-        paymentstatus.setLayoutX(employeeCheckoutOverlay.getPrefWidth() /2 - paymentstatus.getPrefWidth() / 2);
-        employeeCheckoutOverlay.getChildren().add(paymentstatus);
+        Label paymentStatus = new Label();
+        paymentStatus.setPrefSize(300, 150);
+        paymentStatus.setTextAlignment(TextAlignment.CENTER);
+        paymentStatus.setLayoutY(env.WINDOW_HEIGHT /2 - paymentStatus.getPrefHeight() / 2);
+        paymentStatus.setFont(new Font("Arial", 18));
+        paymentStatus.setLayoutX(env.WINDOW_WIDTH /2 - paymentStatus.getPrefWidth() / 2);
+        root.getChildren().add(paymentStatus);
+
+
+
+
+        PauseTransition paymentDelay = new PauseTransition(Duration.seconds(3));
+        paymentDelay.setOnFinished(e -> {
+            root.getChildren().removeAll(blackoutOverlay, employeeCheckoutOverlay, paymentStatus);
+            basket.getProducts().clear();
+
+        });
+
+
+
 
 
 
@@ -473,30 +489,43 @@ public class controller {
             totalprice += basket.getProducts().get(i).getAmount() * basket.getProducts().get(i).getProduct().getPrice();
 
         }
-        if (creditinfo.getCredit() < totalprice) {
-            paymentstatus.setStyle("-fx-background-color: red");
-            paymentstatus.setText("insufficient credit");
+        if (creditinfo.getFunds() < totalprice) {
+
+            paymentStatus.setStyle("-fx-background-color: red");
+            paymentStatus.setText("insufficient credit");
+            paymentDelay.play();
+
+
+
         }
         else {
+            paymentDelay.play();
+            paymentStatus.setStyle("-fx-background-color: green");
+            paymentStatus.setText("Payment Successful! \n window will close in 3 seconds");
+            paymentStatus.setPrefSize(300, 150);
+            paymentStatus.setTextAlignment(TextAlignment.CENTER);
+            paymentStatus.setLayoutY(employeeCheckoutOverlay.getPrefHeight() * 0.1);
+            paymentStatus.setFont(new Font("Arial", 18));
+            paymentStatus.setLayoutX(employeeCheckoutOverlay.getPrefWidth() /2 - paymentStatus.getPrefWidth() / 2);
 
-            paymentstatus.setStyle("-fx-background-color: green");
-            paymentstatus.setText("Payment Successful! \n window will close in 3 seconds");
-            creditinfo.setCredit(creditinfo.getCredit() - totalprice);
-            for (int i = 0; i < products.size(); i++) {
-                for (int j = 0; j < basket.getProducts().get(i).getProduct().getPrice(); j++) {
-                    if (basket.getProducts().get(j).getProduct().getId() == products.get(i).getId()) {
-                        products.get(i).setQuantity(products.get(i).getQuantity() - 1);
 
+
+            creditinfo.subFunds(totalprice);
+            if (basket != null && basket.getProducts() != null && basket.getProducts().size() > 0) {
+                for (int i = 0; i < products.size(); i++) {
+                    for (int j = 0; j < basket.getProducts().get(i).getProduct().getPrice(); j++) {
+                        if (basket.getProducts().get(j).getProduct().getId() == products.get(i).getId()) {
+                            products.get(i).setQuantity(products.get(i).getQuantity() - 1);
+
+                        }
                     }
                 }
             }
-            Thread.sleep(3000);
-            root.getChildren().remove(blackoutOverlay);
-            root.getChildren().remove(employeeCheckoutOverlay);
-            basket.getProducts().removeAll(basket.getProducts());
+
         }
 
     }
+
 
 }
 

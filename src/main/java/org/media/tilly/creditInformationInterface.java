@@ -1,8 +1,12 @@
 package org.media.tilly;
 
 public interface creditInformationInterface {
-    public double getCredit();
+    double getFunds();
 
 
-    public void setCredit(double credit);
+    void setFunds(double credit);
+
+    void subFunds(double credit);
+
+    void addFunds(double credit);
 }

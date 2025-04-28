@@ -1,27 +1,28 @@
 package org.media.tilly;
 
 public class creditInformation implements creditInformationInterface {
-
-    int credit = 99999;
+    double funds = 2.0;
 
     @Override
-    public double getCredit() {
+    public double getFunds() {
         //implement DB here
-        return credit;
+        return funds;
 
 
     }
 
     @Override
-    public void setCredit(double credit) {
+    public void setFunds(double funds) {
         //implement database here
+        this.funds = funds;
 
     }
-    public void subFunds(int credit) {
-        this.credit = this.credit - credit;
+    @Override
+    public void subFunds(double funds) {
+        this.funds = this.funds - funds;
     }
-
-    public void addFunds(int credit) {
-        this.credit = this.credit + credit;
+    @Override
+    public void addFunds(double funds) {
+        this.funds = this.funds + funds;
     }
 }
